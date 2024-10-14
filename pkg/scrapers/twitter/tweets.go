@@ -30,13 +30,24 @@ var cookieFilesIndex int
 var cookieFiles []string
 var cookieFilesOnce sync.Once
 
-const cacheFilePath = "~/file_cache.txt" // Đường dẫn file cache lưu chỉ số
+var cacheFilePath string
+
+func init() {
+	// Lấy đường dẫn thư mục home của người dùng
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+
+	// Gán đường dẫn của file cache
+	cacheFilePath = filepath.Join(homeDir, "file_cache.txt")
+}
 
 // initCookieFiles khởi tạo danh sách các file cookie
 func initCookieFiles() {
 	appConfig := config.GetInstance()
 
-	// Tìm tất cả các file chứa chuỗi "twitter_cookies" trong thư mục MasaDir
+	// Kiểm tra xem thư mục MasaDir có tồn tại không
 	files, err := os.ReadDir(appConfig.MasaDir)
 	if err != nil {
 		panic(err)
@@ -51,13 +62,21 @@ func initCookieFiles() {
 
 	// Đọc chỉ số từ cache nếu có
 	if _, err := os.Stat(cacheFilePath); err == nil {
+		// File cache tồn tại, đọc nội dung
 		cacheIndex, err := os.ReadFile(cacheFilePath)
 		if err == nil {
 			cookieFilesIndex, _ = strconv.Atoi(string(cacheIndex))
 		}
 	} else {
-		// Nếu file cache không tồn tại, khởi tạo chỉ số bắt đầu từ 0
+		// File cache không tồn tại, khởi tạo chỉ số bắt đầu từ 0
 		cookieFilesIndex = 0
+
+		// Tạo file cache
+		file, err := os.Create(cacheFilePath)
+		if err != nil {
+			panic(err)
+		}
+		file.Close() // Đóng file sau khi tạo
 	}
 }
 
