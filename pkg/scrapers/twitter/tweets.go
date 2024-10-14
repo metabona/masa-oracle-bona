@@ -13,11 +13,75 @@ import (
 
 	"github.com/masa-finance/masa-oracle/pkg/config"
 	"github.com/masa-finance/masa-oracle/pkg/llmbridge"
+
+	"io"
+	"os"
+	"strconv"
+	"sync"
 )
 
 type TweetResult struct {
 	Tweet *twitterscraper.Tweet
 	Error error
+}
+
+// Biến toàn cục để lưu chỉ số hiện tại của cookieFiles
+var cookieFilesIndex int
+var cookieFiles []string
+var cookieFilesOnce sync.Once
+
+const cacheFilePath = "~/file_cache.txt" // Đường dẫn file cache lưu chỉ số
+
+// initCookieFiles khởi tạo danh sách các file cookie
+func initCookieFiles() {
+	appConfig := config.GetInstance()
+
+	// Tìm tất cả các file chứa chuỗi "twitter_cookies" trong thư mục MasaDir
+	files, err := os.ReadDir(appConfig.MasaDir)
+	if err != nil {
+		panic(err)
+	}
+
+	cookieFiles = []string{}
+	for _, f := range files {
+		if !f.IsDir() && strings.Contains(f.Name(), "twitter_cookies") {
+			cookieFiles = append(cookieFiles, filepath.Join(appConfig.MasaDir, f.Name()))
+		}
+	}
+
+	// Đọc chỉ số từ cache nếu có
+	if _, err := os.Stat(cacheFilePath); err == nil {
+		cacheIndex, err := os.ReadFile(cacheFilePath)
+		if err == nil {
+			cookieFilesIndex, _ = strconv.Atoi(string(cacheIndex))
+		}
+	} else {
+		// Nếu file cache không tồn tại, khởi tạo chỉ số bắt đầu từ 0
+		cookieFilesIndex = 0
+	}
+}
+
+// getNextCookieFile trả về file cookie tiếp theo trong danh sách
+func getNextCookieFile() string {
+	cookieFilesOnce.Do(initCookieFiles) // Khởi tạo danh sách file cookie một lần
+
+	// Lấy file cookie theo thứ tự
+	nextFile := cookieFiles[cookieFilesIndex]
+	cookieFilesIndex = (cookieFilesIndex + 1) % len(cookieFiles) // Tăng chỉ số và quay lại đầu nếu vượt quá
+
+	// Cập nhật chỉ số vào cache
+	file, err := os.OpenFile(cacheFilePath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	_, err = io.WriteString(file, strconv.Itoa(cookieFilesIndex))
+	if err != nil {
+		panic(err)
+	}
+
+	return nextFile
 }
 
 // auth initializes and returns a new Twitter scraper instance. It attempts to load cookies from a file to reuse an existing session.
@@ -26,7 +90,11 @@ type TweetResult struct {
 func auth() *twitterscraper.Scraper {
 	scraper := twitterscraper.New()
 	appConfig := config.GetInstance()
-	cookieFilePath := filepath.Join(appConfig.MasaDir, "twitter_cookies.json")
+	// cookieFilePath := filepath.Join(appConfig.MasaDir, "twitter_cookies.json")
+	cookieFilePath := getNextCookieFile()
+
+	logrus.Warning("cookieFilePath=")
+	logrus.Warning(cookieFilePath)
 
 	if err := LoadCookies(scraper, cookieFilePath); err == nil {
 		logrus.Debug("Cookies loaded successfully.")
