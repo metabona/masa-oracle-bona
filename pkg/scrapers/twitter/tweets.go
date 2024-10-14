@@ -55,10 +55,11 @@ func initCookieFiles() {
 
 	cookieFiles = []string{}
 	for _, f := range files {
-		if !f.IsDir() && strings.Contains(f.Name(), "twitter_cookies") {
+		if !f.IsDir() && strings.Contains(f.Name(), "twitter_cookie") {
 			cookieFiles = append(cookieFiles, filepath.Join(appConfig.MasaDir, f.Name()))
 		}
 	}
+	logrus.Warning(cookieFiles)
 
 	// Đọc chỉ số từ cache nếu có
 	if _, err := os.Stat(cacheFilePath); err == nil {
