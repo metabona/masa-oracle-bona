@@ -55,7 +55,7 @@ func initCookieFiles() {
 
 	cookieFiles = []string{}
 	for _, f := range files {
-		if !f.IsDir() && strings.Contains(f.Name(), "twitter_cookie") {
+		if !f.IsDir() && (strings.Contains(f.Name(), "twitter_cookie") || strings.Contains(f.Name(), "cookies-x")) && strings.HasSuffix(f.Name(), ".json") {
 			cookieFiles = append(cookieFiles, filepath.Join(appConfig.MasaDir, f.Name()))
 		}
 	}
