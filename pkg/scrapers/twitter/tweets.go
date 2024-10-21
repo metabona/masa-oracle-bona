@@ -215,6 +215,7 @@ func ScrapeTweetsForSentiment(query string, count int, model string) (string, st
 //   - A slice of pointers to twitterscraper.Tweet objects that match the search query.
 //   - An error if the scraping process encounters any issues.
 func ScrapeTweetsByQuery(query string, count int) ([]*TweetResult, error) {
+	logrus.Infof("ScrapeTweetsByQuery query=%s, count=%d", query, count)
 	scraper := auth()
 	var tweets []*TweetResult
 	var lastError error
@@ -225,12 +226,13 @@ func ScrapeTweetsByQuery(query string, count int) ([]*TweetResult, error) {
 
 	// Set search mode
 	scraper.SetSearchMode(twitterscraper.SearchLatest)
-
+	logrus.Info("scraper.SetSearchMode(twitterscraper.SearchLatest)")
 	// Perform the search with the specified query and count
 	for tweetResult := range scraper.SearchTweets(context.Background(), query, count) {
 		if tweetResult.Error != nil {
 			lastError = tweetResult.Error
 			logrus.Warnf("[+] Error encountered while scraping tweet: %v", tweetResult.Error)
+
 			if strings.Contains(tweetResult.Error.Error(), "Rate limit exceeded") {
 				return nil, fmt.Errorf("Twitter API rate limit exceeded (429 error)")
 			}
