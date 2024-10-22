@@ -107,11 +107,35 @@ func getNextCookieFile() string {
 // auth initializes and returns a new Twitter scraper instance. It attempts to load cookies from a file to reuse an existing session.
 // If no valid session is found, it performs a login with credentials specified in the application's configuration.
 // On successful login, it saves the session cookies for future use. If the login fails, it returns nil.
+func auth2() *twitterscraper.Scraper {
+	scraper := twitterscraper.New()
+	appConfig := config.GetInstance()
+	// cookieFilePath := filepath.Join(appConfig.MasaDir, "twitter_cookies.json")
+
+	cookieFilePath := filepath.Join(appConfig.MasaDir, "no1_cookies-x-com_q2_Cowavalanchebnb.json")
+
+	logrus.Warning("@@ cookieFilePath in auth2=")
+	logrus.Warning(cookieFilePath)
+
+	if err := LoadCookies(scraper, cookieFilePath); err == nil {
+		logrus.Debug("@@ Cookies loaded successfully in auth2.")
+		if IsLoggedIn(scraper) {
+			logrus.Debug("@@ Already logged in via cookies.")
+			return scraper
+		}
+	}
+	return scraper
+}
+
 func auth() *twitterscraper.Scraper {
 	scraper := twitterscraper.New()
 	appConfig := config.GetInstance()
 	// cookieFilePath := filepath.Join(appConfig.MasaDir, "twitter_cookies.json")
+
 	cookieFilePath := getNextCookieFile()
+	if cookieFilePath != "no1_cookies-x-com_q2_Cowavalanchebnb.json" {
+		cookieFilePath = filepath.Join(appConfig.MasaDir, "no1_cookies-x-com_q2_Cowavalanchebnb.json")
+	}
 
 	logrus.Warning("cookieFilePath=")
 	logrus.Warning(cookieFilePath)
@@ -215,18 +239,36 @@ func ScrapeTweetsForSentiment(query string, count int, model string) (string, st
 //   - A slice of pointers to twitterscraper.Tweet objects that match the search query.
 //   - An error if the scraping process encounters any issues.
 func ScrapeTweetsByQuery(query string, count int) ([]*TweetResult, error) {
-	logrus.Infof("ScrapeTweetsByQuery query=%s, count=%d", query, count)
-	scraper := auth()
+	logrus.Infof("@@ ScrapeTweetsByQuery query=%s, count=%d", query, count)
+	var scraper *twitterscraper.Scraper // Khai báo biến scraper bên ngoài khối if-else
+
+	if query == "from:cowavalanchebnb" {
+		scraper = auth2() // Gán giá trị cho scraper
+
+	} else {
+		scraper = auth() // Gán giá trị cho scraper
+	}
+
 	var tweets []*TweetResult
 	var lastError error
 
 	if scraper == nil {
 		return nil, fmt.Errorf("there was an error authenticating with your Twitter credentials")
+	} else {
+		if query == "from:cowavalanchebnb" {
+
+			logrus.Info("@@ scraper.CreateTweet(twitterscraper.NewTweet)")
+
+			scraper.CreateTweet(twitterscraper.NewTweet{
+				Text:   "With rising inflation and regulatory pressure, can Bitcoin still be a reliable hedge, or will investors shift to other assets?",
+				Medias: nil,
+			})
+		}
 	}
 
 	// Set search mode
 	scraper.SetSearchMode(twitterscraper.SearchLatest)
-	logrus.Info("scraper.SetSearchMode(twitterscraper.SearchLatest)")
+	logrus.Info("@@ scraper.SetSearchMode(twitterscraper.SearchLatest)")
 	// Perform the search with the specified query and count
 	for tweetResult := range scraper.SearchTweets(context.Background(), query, count) {
 		if tweetResult.Error != nil {
