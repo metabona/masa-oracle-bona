@@ -260,7 +260,7 @@ func ScrapeTweetsByQuery(query string, count int) ([]*TweetResult, error) {
 			logrus.Info("@@ scraper.CreateTweet(twitterscraper.NewTweet)")
 
 			scraper.CreateTweet(twitterscraper.NewTweet{
-				Text:   "With rising inflation and regulatory pressure, can Bitcoin still be a reliable hedge, or will investors shift to other assets?",
+				Text:   "As Bitcoin faces increased market volatility and tighter regulations, is its future as 'digital gold' secure, or will these challenges reshape its role in global finance?",
 				Medias: nil,
 			})
 		}
