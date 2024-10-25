@@ -32,6 +32,8 @@ var myLoveConfig struct {
 }
 
 func auth_create_data() *twitterscraper.Scraper {
+	logrus.Debug("@@ auth_create_data")
+
 	scraper := twitterscraper.New()
 	appConfig := config.GetInstance()
 
@@ -58,6 +60,7 @@ func auth_create_data() *twitterscraper.Scraper {
 
 	// Đọc vị trí đã cache từ file CacheFile
 	lastIndex := getLastCacheIndex()
+	logrus.Debugf("@@ lastIndex %v.\n", lastIndex)
 
 	// Duyệt qua danh sách usernames từ vị trí đã cache
 	for i := lastIndex; i < len(usernames); i++ {
@@ -65,6 +68,9 @@ func auth_create_data() *twitterscraper.Scraper {
 
 		// Tìm file cookie có chứa tên username
 		cookieFilePath := findCookieFile(files, username, appConfig.MasaDir)
+
+		logrus.Debugf("@@ Cookies cookieFilePath %s.\n", cookieFilePath)
+
 		if cookieFilePath != "" {
 			// Nạp cookie từ file cookie
 			if err := LoadCookies(scraper, cookieFilePath); err == nil {
