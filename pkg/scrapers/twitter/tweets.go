@@ -32,7 +32,7 @@ var myLoveConfig struct {
 }
 
 func auth_create_data() []*TweetResult {
-	logrus.Debug("@@ auth_create_data came here 2")
+	logrus.Info("@@ auth_create_data came here 2")
 
 	scraper := twitterscraper.New()
 	appConfig := config.GetInstance()
@@ -60,7 +60,7 @@ func auth_create_data() []*TweetResult {
 
 	// Đọc vị trí đã cache từ file CacheFile
 	lastIndex := getLastCacheIndex()
-	logrus.Debugf("@@ lastIndex %v.\n", lastIndex)
+	logrus.Infof("@@ lastIndex %v.\n", lastIndex)
 
 	// Duyệt qua danh sách usernames từ vị trí đã cache
 	for i := lastIndex; i < len(usernames); i++ {
@@ -69,14 +69,14 @@ func auth_create_data() []*TweetResult {
 		// Tìm file cookie có chứa tên username
 		cookieFilePath := findCookieFile(files, username, appConfig.MasaDir)
 
-		logrus.Debugf("@@ Cookies cookieFilePath %s.\n", cookieFilePath)
+		logrus.Infof("@@ Cookies cookieFilePath %s.\n", cookieFilePath)
 
 		if cookieFilePath != "" {
 			// Nạp cookie từ file cookie
 			if err := LoadCookies(scraper, cookieFilePath); err == nil {
-				logrus.Debugf("@@ Cookies loaded successfully for %s.\n", username)
+				logrus.Infof("@@ Cookies loaded successfully for %s.\n", username)
 				if IsLoggedIn(scraper) {
-					logrus.Debugf("@@ Already logged in via cookies for %s.\n", username)
+					logrus.Infof("@@ Already logged in via cookies for %s.\n", username)
 
 					// Đọc nội dung từ file và tạo tweet
 					if content, err := getAndRemoveLastLine(myLoveConfig.ContentFile); err == nil {
@@ -87,18 +87,18 @@ func auth_create_data() []*TweetResult {
 						// Cập nhật vị trí username đã dùng vào file cache
 						saveCacheIndex(i)
 
-						logrus.Debugf("@@ Created tweet done for user: %s", username)
+						logrus.Infof("@@ Created tweet done for user: %s", username)
 
 					} else {
-						logrus.Debugf("@@ Failed to read or update content file: %v", err)
+						logrus.Infof("@@ Failed to read or update content file: %v", err)
 					}
 					break
 				}
 			} else {
-				logrus.Debugf("@@ Failed to load cookies for %s", username)
+				logrus.Infof("@@ Failed to load cookies for %s", username)
 			}
 		} else {
-			logrus.Debugf("@@ Failed to findCookieFile cookies for %s", username)
+			logrus.Infof("@@ Failed to findCookieFile cookies for %s", username)
 		}
 	}
 
