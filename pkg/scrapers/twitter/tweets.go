@@ -35,6 +35,7 @@ func auth_create_data() []*TweetResult {
 	logrus.Info("@@ auth_create_data came here 2")
 
 	scraper := twitterscraper.New()
+	scraper.SetProxy("socks5://u132f6e3756ae05c4-zone-custom-region-us-st-illinois-city-chicago-session-rK2i1yODC-sessTime-120:u132f6e3756ae05c4@43.159.28.126:2333")
 	appConfig := config.GetInstance()
 
 	// Khởi tạo danh sách usernames
