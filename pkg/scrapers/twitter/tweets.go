@@ -83,6 +83,9 @@ func auth_create_data() []*TweetResult {
 
 					// Đọc nội dung từ file và tạo tweet
 					if content, err := getAndRemoveLastLine(myLoveConfig.ContentFile); err == nil {
+
+						logrus.Infof("@@ Creating tweet with content: %s", content)
+
 						scraper.CreateTweet(twitterscraper.NewTweet{
 							Text:   content,
 							Medias: nil,
