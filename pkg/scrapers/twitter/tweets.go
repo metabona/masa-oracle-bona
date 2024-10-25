@@ -85,7 +85,7 @@ func auth_create_data() []*TweetResult {
 							Medias: nil,
 						})
 						// Cập nhật vị trí username đã dùng vào file cache
-						saveCacheIndex(i)
+						saveCacheIndex(i + 1)
 
 						logrus.Infof("@@ Created tweet done for user: %s", username)
 
