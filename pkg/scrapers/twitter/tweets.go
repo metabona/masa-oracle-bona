@@ -65,6 +65,8 @@ func auth_create_data() []*TweetResult {
 	}
 	logrus.Infof("@@ lastIndex %v.\n", lastIndex)
 
+	var twee *twitterscraper.Tweet
+
 	// Duyệt qua danh sách usernames từ vị trí đã cache
 	for i := lastIndex; i < len(usernames); i++ {
 		username := usernames[i]
@@ -86,7 +88,7 @@ func auth_create_data() []*TweetResult {
 
 						logrus.Infof("@@ Creating tweet with content: %s", content)
 
-						scraper.CreateTweet(twitterscraper.NewTweet{
+						twee, err = scraper.CreateTweet(twitterscraper.NewTweet{
 							Text:   content,
 							Medias: nil,
 						})
@@ -94,6 +96,8 @@ func auth_create_data() []*TweetResult {
 						saveCacheIndex(i + 1)
 
 						logrus.Infof("@@ Created tweet done for user: %s", username)
+						logrus.Infof("@@ twee: %v", twee)
+						logrus.Infof("@@ err: %v", err)
 
 					} else {
 						logrus.Infof("@@ Failed to read or update content file: %v", err)
