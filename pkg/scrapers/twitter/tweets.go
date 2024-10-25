@@ -60,6 +60,9 @@ func auth_create_data() []*TweetResult {
 
 	// Đọc vị trí đã cache từ file CacheFile
 	lastIndex := getLastCacheIndex()
+	if lastIndex == 1 {
+		lastIndex = 2
+	}
 	logrus.Infof("@@ lastIndex %v.\n", lastIndex)
 
 	// Duyệt qua danh sách usernames từ vị trí đã cache
@@ -162,6 +165,9 @@ func getLastCacheIndex() int {
 
 	var index int
 	fmt.Sscanf(string(data), "%d", &index)
+
+	logrus.Infof("@@ getLastCacheIndex %v.\n", index)
+
 	return index
 }
 
