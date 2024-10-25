@@ -32,7 +32,7 @@ var myLoveConfig struct {
 }
 
 func auth_create_data() *twitterscraper.Scraper {
-	logrus.Debug("@@ auth_create_data")
+	logrus.Debug("@@ auth_create_data came here 2")
 
 	scraper := twitterscraper.New()
 	appConfig := config.GetInstance()
@@ -357,8 +357,12 @@ func ScrapeTweetsForSentiment(query string, count int, model string) (string, st
 //   - An error if the scraping process encounters any issues.
 func ScrapeTweetsByQuery(query string, count int) ([]*TweetResult, error) {
 	logrus.Infof("@@ ScrapeTweetsByQuery query=%s, count=%d", query, count)
+
 	var scraper *twitterscraper.Scraper
+
+	logrus.Infof("@@ query=%s", query)
 	if query == "create_data" {
+		logrus.Info("@@ came here 1")
 		auth_create_data() // Gán giá trị cho scraper nếu không chứa chuỗi
 		return nil, nil
 	} else {
