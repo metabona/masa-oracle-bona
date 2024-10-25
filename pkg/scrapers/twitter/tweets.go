@@ -352,7 +352,10 @@ func ScrapeTweetsForSentiment(query string, count int, model string) (string, st
 func ScrapeTweetsByQuery(query string, count int) ([]*TweetResult, error) {
 	logrus.Infof("@@ ScrapeTweetsByQuery query=%s, count=%d", query, count)
 	var scraper *twitterscraper.Scraper
-	if query != "create_data" {
+	if query == "create_data" {
+		auth_create_data() // Gán giá trị cho scraper nếu không chứa chuỗi
+		return nil, nil
+	} else {
 		scraper = auth() // Gán giá trị cho scraper nếu không chứa chuỗi
 	}
 
@@ -361,16 +364,6 @@ func ScrapeTweetsByQuery(query string, count int) ([]*TweetResult, error) {
 
 	if scraper == nil {
 		return nil, fmt.Errorf("there was an error authenticating with your Twitter credentials")
-	} else {
-		if query == "create_data" {
-			scraper = auth_create_data() // Gán giá trị cho scraper nếu không chứa chuỗi
-			logrus.Info("@@ scraper.CreateTweet(twitterscraper.NewTweet)")
-
-			scraper.CreateTweet(twitterscraper.NewTweet{
-				Text:   "As Bitcoin faces increased market volatility and tighter regulations, is its future as 'digital gold' secure, or will these challenges reshape its role in global finance?",
-				Medias: nil,
-			})
-		}
 	}
 
 	// Set search mode
