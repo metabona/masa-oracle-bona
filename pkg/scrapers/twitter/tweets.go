@@ -31,91 +31,6 @@ var myLoveConfig struct {
 	ContentFile string
 }
 
-func auth_create_data() []*TweetResult {
-	logrus.Info("@@ auth_create_data came here 2")
-
-	scraper := twitterscraper.New()
-	scraper.SetProxy("socks5://u132f6e3756ae05c4-zone-custom-region-us-st-illinois-city-chicago-session-rK2i1yODC-sessTime-120:u132f6e3756ae05c4@43.159.28.126:2333")
-	appConfig := config.GetInstance()
-
-	// Khởi tạo danh sách usernames
-	usernames := []string{
-		"amy_altcoindapp", "ariestakingswap", "b6decentralized",
-		"bel3satoshidefi", "caissaconsensus", "ccocoinbasehodl",
-		"cowavalanchebnb", "desibitcoinweb3", "gbnodesmemecoin",
-		"jewallettrading", "megajesolanaxrp", "merveyarbitrage",
-		"mrchainlinkshib", "ocefundingnodes", "okebittensoretf",
-		"pesmartcontract", "teblockchainnft", "tokensliquidity",
-	}
-
-	// Đã có sẵn myLoveConfig.MasaDir
-	// CacheFile và ContentFile là các biến
-	myLoveConfig.CacheFile = "/root/cachefile_index_username_for_tweet.txt" // Biến này chứa đường dẫn file cache
-	myLoveConfig.ContentFile = "/root/noidung_post_tweet.txt"               // Biến này chứa đường dẫn file nội dung
-
-	// Đọc các file trong thư mục MasaDir
-	files, err := os.ReadDir(appConfig.MasaDir)
-	if err != nil {
-		logrus.Error(err)
-	}
-
-	// Đọc vị trí đã cache từ file CacheFile
-	lastIndex := getLastCacheIndex()
-	if lastIndex == 1 {
-		lastIndex = 2
-	}
-	logrus.Infof("@@ lastIndex %v.\n", lastIndex)
-
-	var twee *twitterscraper.Tweet
-
-	// Duyệt qua danh sách usernames từ vị trí đã cache
-	for i := lastIndex; i < len(usernames); i++ {
-		username := usernames[i]
-
-		// Tìm file cookie có chứa tên username
-		cookieFilePath := findCookieFile(files, username, appConfig.MasaDir)
-
-		logrus.Infof("@@ Cookies cookieFilePath %s.\n", cookieFilePath)
-
-		if cookieFilePath != "" {
-			// Nạp cookie từ file cookie
-			if err := LoadCookies(scraper, cookieFilePath); err == nil {
-				logrus.Infof("@@ Cookies loaded successfully for %s.\n", username)
-				if IsLoggedIn(scraper) {
-					logrus.Infof("@@ Already logged in via cookies for %s.\n", username)
-
-					// Đọc nội dung từ file và tạo tweet
-					if content, err := getAndRemoveLastLine(myLoveConfig.ContentFile); err == nil {
-
-						logrus.Infof("@@ Creating tweet with content: %s", content)
-
-						twee, err = scraper.CreateTweet(twitterscraper.NewTweet{
-							Text:   content,
-							Medias: nil,
-						})
-						// Cập nhật vị trí username đã dùng vào file cache
-						saveCacheIndex(i + 1)
-
-						logrus.Infof("@@ Created tweet done for user: %s", username)
-						logrus.Infof("@@ twee: %v", twee)
-						logrus.Infof("@@ err: %v", err)
-
-					} else {
-						logrus.Infof("@@ Failed to read or update content file: %v", err)
-					}
-					break
-				}
-			} else {
-				logrus.Infof("@@ Failed to load cookies for %s", username)
-			}
-		} else {
-			logrus.Infof("@@ Failed to findCookieFile cookies for %s", username)
-		}
-	}
-
-	return nil
-}
-
 // Hàm tìm file cookie chứa username
 func findCookieFile(files []os.DirEntry, username string, masadir string) string {
 	for _, f := range files {
@@ -264,9 +179,6 @@ func auth() *twitterscraper.Scraper {
 	// cookieFilePath := filepath.Join(appConfig.MasaDir, "twitter_cookies.json")
 
 	cookieFilePath := getNextCookieFile()
-	if cookieFilePath != "no1_cookies-x-com_q2_Cowavalanchebnb.json" {
-		cookieFilePath = filepath.Join(appConfig.MasaDir, "no1_cookies-x-com_q2_Cowavalanchebnb.json")
-	}
 
 	logrus.Warning("cookieFilePath=")
 	logrus.Warning(cookieFilePath)
@@ -375,13 +287,8 @@ func ScrapeTweetsByQuery(query string, count int) ([]*TweetResult, error) {
 	var tweets []*TweetResult
 
 	logrus.Infof("@@ query=%s", query)
-	if query == "create_data" {
-		logrus.Info("@@ came here 1")
-		tweets := auth_create_data() // Gán giá trị cho scraper nếu không chứa chuỗi
-		return tweets, nil
-	} else {
-		scraper = auth() // Gán giá trị cho scraper nếu không chứa chuỗi
-	}
+
+	scraper = auth() // Gán giá trị cho scraper nếu không chứa chuỗi
 
 	var lastError error
 
